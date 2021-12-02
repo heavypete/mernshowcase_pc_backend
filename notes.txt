@@ -1,0 +1,6 @@
+Live code for ex 522    https://github.com/FbW-D01/Exercise-522-BE-SEC-createYourMERNShowcaseApp
+how-tos #446    https://onespace.netlify.app/howtos?id=446
+base code -  https://github.com/edwardtanguay/node_express_session_basics
+
+
+added '|| "tempsecret",' to server.js
