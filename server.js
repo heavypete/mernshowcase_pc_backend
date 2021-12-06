@@ -3,11 +3,19 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
+import mongoose from "mongoose";
+import User from "./models/user.js";
 
 dotenv.config();
 
+mongoose.connect(process.env.MONGODB_URI);
+
 const app = express();
-const PORT = 3003;
+const PORT = process.env.PORT || 3003;
+const mongoConnectionString = process.env.MONGODB_URI;
+//const mongoConnectionString = "mongodb://localhost:27017/showcase";
+//const client = new MongoClient(mongoConnectionString);
+mongoose.connect(mongoConnectionString);
 
 app.use(cookieParser());
 app.use(
@@ -26,56 +34,35 @@ app.use(
   })
 );
 
-// const users = [
-//   {
-//     username: "anonymousUser",
-//     firstName: "Anonymous",
-//     lastName: "User",
-//     accessGroups: "loggedOutUsers",
-//   },
-//   {
-//     username: "jj",
-//     firstName: "James",
-//     lastName: "JustSignedUpton",
-//     accessGroups: "loggedInUsers,members",
-//   },
-//   {
-//     username: "aa",
-//     firstName: "Ashley",
-//     lastName: "Approvedmemberton",
-//     accessGroups: "loggedInUsers, members",
-//   },
-//   {
-//     username: "kc",
-//     firstName: "Kyle",
-//     lastName: "ContentEditorton",
-//     accessGroups: "loggedInUsers, members, contentEditors",
-//   },
-//   {
-//     username: "ma",
-//     firstName: "Mindy",
-//     lastName: "Administraton",
-//     accessGroups: "loggedInUsers,members, admins",
-//   },
-// ];
+//const UserModel = mongoose.model("user", userSchema, "users");
 
-app.post("/login", (req, res) => {
+// const users = [
+
+app.get("/User", async (req, res) => {
+  const user = await User.find();
+  res.json(user);
+});
+
+app.post("/login", async (req, res) => {
   const username = req.body.username;
   // const password = req.body.password;
-  let user = users.find((user) => user.username === username);
+  let user = await User.findOne({ username: username });
+  console.log(user);
   if (!user) {
-    user = users.find((user) => user.username === "anonymousUser");
+    user = await User.findOne({ username: "anonymousUser" });
   }
   req.session.user = user;
   req.session.save();
   res.json(user);
 });
 
-app.get("/currentuser", (req, res) => {
+app.get("/currentuser", async (req, res) => {
   let user = req.session.user;
+
   if (!user) {
-    user = users.find((user) => user.username === "anonymousUser");
+    user = await User.findOne({ username: "anonymousUser" });
   }
+  console.log(user);
   res.json(user);
 });
 
