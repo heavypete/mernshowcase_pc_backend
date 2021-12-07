@@ -1,10 +1,19 @@
 @url = http://localhost:3003
 
+
+### Login
+POST {{url}}/login
+Content-Type: application.json
+
 ###
 GET {{url}}/currentuser 
 content-type: application/json
 
+### Get User
+GET {{url}}/User-Agent: 
+content-type: application/json
 
 ###
 GET {{url}}/logout
 content-type: application/json
+

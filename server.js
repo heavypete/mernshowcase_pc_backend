@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
-import User from "./models/user.js";
+import UserModel from "./models/user.js";
 
 dotenv.config();
 
@@ -38,18 +38,18 @@ app.use(
 
 // const users = [
 
-app.get("/User", async (req, res) => {
-  const user = await User.find();
+app.get("/user", async (req, res) => {
+  const user = await UserModel.find();
   res.json(user);
 });
 
 app.post("/login", async (req, res) => {
   const username = req.body.username;
   // const password = req.body.password;
-  let user = await User.findOne({ username: username });
-  console.log(user);
+  let user = await UserModel.findOne({ username: username });
+  console.log("login function triggered");
   if (!user) {
-    user = await User.findOne({ username: "anonymousUser" });
+    user = await UserModel.findOne({ username: "anonymousUser" });
   }
   req.session.user = user;
   req.session.save();
@@ -60,15 +60,16 @@ app.get("/currentuser", async (req, res) => {
   let user = req.session.user;
 
   if (!user) {
-    user = await User.findOne({ username: "anonymousUser" });
+    user = await UserModel.findOne({ username: "anonymousUser" });
   }
   console.log(user);
   res.json(user);
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", async (req, res) => {
+  console.log("Haalloo");
   req.session.destroy();
-  const user = users.find((user) => user.username === "anonymousUser");
+  const user = await UserModel.findOne({ username: "anonymousUser" });
   res.json(user);
 });
 
