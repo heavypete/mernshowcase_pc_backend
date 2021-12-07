@@ -17,3 +17,7 @@ content-type: application/json
 GET {{url}}/logout
 content-type: application/json
 
+### approve user
+POST {{url}}/approveuser
+content-type: application/json 
+
