@@ -5,16 +5,17 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import UserModel from "./models/user.js";
+import bcrypt from "bcrypt";
 
 dotenv.config();
+const saltRounds = Number(process.env.SALT_ROUNDS);
 
 mongoose.connect(process.env.MONGODB_URI);
 
 const app = express();
 const PORT = process.env.PORT || 3003;
+
 const mongoConnectionString = process.env.MONGODB_URI;
-//const mongoConnectionString = "mongodb://localhost:27017/showcase";
-//const client = new MongoClient(mongoConnectionString);
 mongoose.connect(mongoConnectionString);
 
 app.use(cookieParser());
@@ -36,7 +37,10 @@ app.use(
 
 //const UserModel = mongoose.model("user", userSchema, "users");
 
-// const users = [
+const userIsInGroup = (user, accessGroup) => {
+  const accessGroupArray = user.accessGroups.split("").map((m) => m.trim());
+  return accessGroupArray.includes(accessGroup);
+};
 
 app.get("/user", async (req, res) => {
   const user = await UserModel.find();
@@ -64,6 +68,60 @@ app.get("/currentuser", async (req, res) => {
   }
   console.log(user);
   res.json(user);
+});
+
+app.post("/createuser", async (req, res) => {
+  const user = req.body.user;
+  console.log(user);
+  if (
+    user.username.trim() === "" ||
+    user.password1.trim() === "" ||
+    user.password1 !== user.password2
+  ) {
+    res.sendStatus(403);
+  } else {
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(user.password1, salt);
+    const _user = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      hash,
+      accessGroups: "loggedInUsers, notYetApprovedUsers",
+    };
+    const dbuser = await UserModel.create(_user);
+    res.json({
+      userAdded: dbuser,
+    });
+  }
+});
+
+app.post("/approveuser", async (req, res) => {
+  const id = req.body.id;
+  console.log("Approve user button CLICKED!!");
+  let user = await req.session.user;
+  if (!user) {
+    res.sendStatus(403);
+  } else {
+    if (!userIsInGroup(user, "admins")) {
+      res.sendStatus(403);
+    } else {
+      const updateResult = await UserModel.findOneAndUpdate(
+        { _id: new mongoose.Types.ObjectId(id) },
+        { $set: { accessGroups: "loggedInUsers,members" } },
+        { new: true }
+      );
+      res.json({ result: updateResult });
+    }
+  }
+});
+
+app.get("/notyetapprovedusers", async (req, res) => {
+  const users = await UserModel.find({
+    accessGroups: { $regex: "notYetApprovedUsers", $options: "i" },
+  });
+  res.json({ users });
 });
 
 app.get("/logout", async (req, res) => {
