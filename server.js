@@ -48,8 +48,6 @@ app.get("/user", async (req, res) => {
   res.json(user);
 });
 
-// bcrypt.compare("password", theHash).then((result) => console.log(result));
-
 app.post("/login", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
