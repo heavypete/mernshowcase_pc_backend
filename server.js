@@ -21,7 +21,7 @@ mongoose.connect(mongoConnectionString);
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3001",
     credentials: true,
   })
 );
@@ -58,10 +58,12 @@ app.post("/login", async (req, res) => {
   } else {
     bcrypt.compare(password, dbUser.hash).then((passwordIsOk) => {
       if (passwordIsOk) {
+        console.log("test line 60");
         req.session.user = dbUser;
         req.session.save();
         res.json(dbUser);
       } else {
+        console.log("test");
         res.sendStatus(403);
       }
     });
